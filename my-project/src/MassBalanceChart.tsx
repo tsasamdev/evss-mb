@@ -66,7 +66,8 @@ const MassBalanceChart: React.FC = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-screen">
-      <h2 className="text-2xl font-bold mb-6 text-center text-black-800">
+      {/* Responsive Title */}
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
         Masse et Centrage F-HDLV
       </h2>
 
@@ -137,7 +138,7 @@ const MassBalanceChart: React.FC = () => {
 
       {/* CG and Weight Info */}
       <div className="text-center mt-6">
-        <p className="text-lg font-semibold text-black-800">
+        <p className="text-lg font-semibold text-gray-800">
           CG: {cg.toFixed(3)} m | Poids Total: {totalWeight.toFixed(2)} Kg
         </p>
         {isOutOfLimits && (
