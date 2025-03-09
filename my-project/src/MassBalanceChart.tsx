@@ -10,7 +10,6 @@ import {
 } from "chart.js";
 import "../src/styles/global.css";
 
-// Register required components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ScatterController);
 
 const MassBalanceChart: React.FC = () => {
@@ -19,11 +18,9 @@ const MassBalanceChart: React.FC = () => {
   const [baggageWeight, setBaggageWeight] = useState<number>(0);
   const [fuelWeightL, setFuelWeightL] = useState<number>(0);
 
-  // Calculate total fuel weight (Kg)
   const totalFuelKilo = fuelWeightL * 0.72;
   const totalWeight = emptyWeight + pilotPassengerWeight + baggageWeight + totalFuelKilo;
 
-  // Calculate CG
   const cg =
     (emptyWeight * 0.26 +
       pilotPassengerWeight * 0.55 +
@@ -31,7 +28,6 @@ const MassBalanceChart: React.FC = () => {
       totalFuelKilo * 0.68) /
     totalWeight;
 
-  // Flight envelope
   const envelope = [
     { x: 0.25, y: 373 },
     { x: 0.31, y: 373 },
@@ -48,14 +44,13 @@ const MassBalanceChart: React.FC = () => {
     totalWeight < Math.min(...envelope.map((p) => p.y)) ||
     totalWeight > Math.max(...envelope.map((p) => p.y));
 
-  // Graph Data
   const data = {
     datasets: [
       {
         label: "Centre de Gravité",
         data: [{ x: cg, y: totalWeight }],
         backgroundColor: isOutOfLimits ? "red" : "green",
-        pointRadius: 4,
+        pointRadius: 6,
       },
       {
         label: "Enveloppe de vol",
@@ -70,49 +65,43 @@ const MassBalanceChart: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-gray-100 shadow-lg rounded-xl ">
+    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl">
       <h2 className="text-2xl font-bold mb-4 text-center text-black-800">
         Masse et Centrage F-HDLV
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Left Column - Inputs */}
-        <div className="flex flex-col space-y-4">
-          {[
-            {
-              label: "Poids à Vide (Kg)",
-              value: emptyWeight,
-              setter: setEmptyWeight,
-            },
-            {
-              label: "Pilote & Passagers (Kg)",
-              value: pilotPassengerWeight,
-              setter: setPilotPassengerWeight,
-            },
-            {
-              label: "Bagages (Kg)",
-              value: baggageWeight,
-              setter: setBaggageWeight,
-            },
-            {
-              label: "Carburant (L)",
-              value: fuelWeightL,
-              setter: setFuelWeightL,
-            },
-          ].map(({ label, value, setter }, idx) => (
-            <div key={idx} className="flex flex-col">
-              <label className="font-semibold text-gray-700">{label} :</label>
-              <input
-                type="number"
-                value={value}
-                onChange={(e) => setter(Math.max(0, Number(e.target.value)))}
-                className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                min="0"
-              />
-            </div>
-          ))}
+        <div className="flex flex-col space-y-4 w-full md:w-1/2">
+          {["Poids à Vide (Kg)", "Pilote & Passagers (Kg)", "Bagages (Kg)", "Carburant (L)"].map(
+            (label, idx) => (
+              <div key={idx} className="flex flex-col">
+                <label className="font-semibold text-gray-700">{label} :</label>
+                <input
+                  type="number"
+                  value={
+                    idx === 0
+                      ? emptyWeight
+                      : idx === 1
+                      ? pilotPassengerWeight
+                      : idx === 2
+                      ? baggageWeight
+                      : fuelWeightL
+                  }
+                  onChange={(e) => {
+                    const value = Math.max(0, Number(e.target.value));
+                    if (idx === 0) setEmptyWeight(value);
+                    else if (idx === 1) setPilotPassengerWeight(value);
+                    else if (idx === 2) setBaggageWeight(value);
+                    else setFuelWeightL(value);
+                  }}
+                  className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  min="0"
+                />
+              </div>
+            )
+          )}
 
-          {/* Display Fuel Weight (Kg) but Not Editable */}
           <div className="flex flex-col">
             <label className="font-semibold text-gray-700">Carburant (Kg) :</label>
             <input
@@ -125,8 +114,8 @@ const MassBalanceChart: React.FC = () => {
         </div>
 
         {/* Right Column - Graph */}
-        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center">
-          <div className="w-full h-80 md:h-96">
+        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center w-full md:w-1/2">
+          <div className="w-full h-96">
             <Chart
               type="scatter"
               data={data}
@@ -143,7 +132,6 @@ const MassBalanceChart: React.FC = () => {
                     title: { display: true, text: "Poids Total (Kg)" },
                     min: 340,
                     max: 620,
-                   
                   },
                 },
               }}
@@ -152,15 +140,12 @@ const MassBalanceChart: React.FC = () => {
         </div>
       </div>
 
-      {/* CG and Weight Information */}
       <div className="text-center mt-4">
-        <p className="text-lg font-semibold text-black-800 text-center">
+        <p className="text-lg font-semibold text-black-800">
           CG: {cg.toFixed(3)} m | Poids Total: {totalWeight.toFixed(2)} Kg
         </p>
         {isOutOfLimits && (
-          <p className="mt-4 text-red-600 font-bold text-center">
-            ⚠️ Attention : Hors des limites de vol sécurisées !
-          </p>
+          <p className="mt-4 text-red-600 font-bold">⚠️ Attention : Hors des limites de vol sécurisées !</p>
         )}
       </div>
     </div>
