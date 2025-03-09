@@ -65,57 +65,52 @@ const MassBalanceChart: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl">
-      <h2 className="text-2xl font-bold mb-4 text-center text-black-800">
+    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-screen">
+      <h2 className="text-2xl font-bold mb-6 text-center text-black-800">
         Masse et Centrage F-HDLV
       </h2>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Left Column - Inputs */}
-        <div className="flex flex-col space-y-4 w-full md:w-1/2">
-          {["Poids à Vide (Kg)", "Pilote & Passagers (Kg)", "Bagages (Kg)", "Carburant (L)"].map(
-            (label, idx) => (
+      {/* Layout Grid for Two Blocks */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Form Block */}
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-xl font-semibold mb-4 text-gray-800">Données d'entrée</h3>
+          <div className="flex flex-col space-y-4">
+            {[
+              { label: "Poids à Vide (Kg)", value: emptyWeight, setter: setEmptyWeight },
+              { label: "Pilote & Passagers (Kg)", value: pilotPassengerWeight, setter: setPilotPassengerWeight },
+              { label: "Bagages (Kg)", value: baggageWeight, setter: setBaggageWeight },
+              { label: "Carburant (L)", value: fuelWeightL, setter: setFuelWeightL },
+            ].map(({ label, value, setter }, idx) => (
               <div key={idx} className="flex flex-col">
                 <label className="font-semibold text-gray-700">{label} :</label>
                 <input
                   type="number"
-                  value={
-                    idx === 0
-                      ? emptyWeight
-                      : idx === 1
-                      ? pilotPassengerWeight
-                      : idx === 2
-                      ? baggageWeight
-                      : fuelWeightL
-                  }
-                  onChange={(e) => {
-                    const value = Math.max(0, Number(e.target.value));
-                    if (idx === 0) setEmptyWeight(value);
-                    else if (idx === 1) setPilotPassengerWeight(value);
-                    else if (idx === 2) setBaggageWeight(value);
-                    else setFuelWeightL(value);
-                  }}
+                  value={value}
+                  onChange={(e) => setter(Math.max(0, Number(e.target.value)))}
                   className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   min="0"
                 />
               </div>
-            )
-          )}
+            ))}
 
-          <div className="flex flex-col">
-            <label className="font-semibold text-gray-700">Carburant (Kg) :</label>
-            <input
-              type="text"
-              value={totalFuelKilo.toFixed(1)}
-              className="border p-2 rounded w-full bg-gray-200 text-gray-600"
-              disabled
-            />
+            {/* Fuel Weight (Kg) Display */}
+            <div className="flex flex-col">
+              <label className="font-semibold text-gray-700">Carburant (Kg) :</label>
+              <input
+                type="text"
+                value={totalFuelKilo.toFixed(1)}
+                className="border p-2 rounded w-full bg-gray-200 text-gray-600"
+                disabled
+              />
+            </div>
           </div>
         </div>
 
-        {/* Right Column - Graph */}
-        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center w-full md:w-1/2">
-          <div className="w-full h-96">
+        {/* Graph Block */}
+        <div className="bg-white p-6 rounded-lg shadow-lg flex items-center justify-center">
+          <div className="w-full h-[400px]">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Graphique</h3>
             <Chart
               type="scatter"
               data={data}
@@ -140,12 +135,15 @@ const MassBalanceChart: React.FC = () => {
         </div>
       </div>
 
-      <div className="text-center mt-4">
+      {/* CG and Weight Info */}
+      <div className="text-center mt-6">
         <p className="text-lg font-semibold text-black-800">
           CG: {cg.toFixed(3)} m | Poids Total: {totalWeight.toFixed(2)} Kg
         </p>
         {isOutOfLimits && (
-          <p className="mt-4 text-red-600 font-bold">⚠️ Attention : Hors des limites de vol sécurisées !</p>
+          <p className="mt-4 text-red-600 font-bold">
+            ⚠️ Attention : Hors des limites de vol sécurisées !
+          </p>
         )}
       </div>
     </div>
