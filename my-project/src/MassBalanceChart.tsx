@@ -13,7 +13,7 @@ import "../src/styles/global.css";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ScatterController);
 
 const MassBalanceChart: React.FC = () => {
-  const [emptyWeight, setEmptyWeight] = useState<number>(345.9);
+  const [emptyWeight] = useState<number>(345.9);
   const [pilotPassengerWeight, setPilotPassengerWeight] = useState<number>(0);
   const [baggageWeight, setBaggageWeight] = useState<number>(0);
   const [fuelWeightL, setFuelWeightL] = useState<number>(0);
@@ -65,7 +65,7 @@ const MassBalanceChart: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-screen">
+    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-fit">
       {/* Responsive Title */}
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
         Masse et Centrage F-HDLV
@@ -76,9 +76,17 @@ const MassBalanceChart: React.FC = () => {
         {/* Form Block */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">Données d'entrée</h3>
+          <div className="flex flex-col">
+              <label className="font-semibold text-gray-700">Poids à Vide (Kg) :</label>
+              <input
+                type="text"
+                value={emptyWeight}
+                className="border p-2 rounded w-full bg-gray-200 text-gray-600"
+                disabled
+              />
+            </div>
           <div className="flex flex-col space-y-4">
             {[
-              { label: "Poids à Vide (Kg)", value: emptyWeight, setter: setEmptyWeight },
               { label: "Pilote & Passagers (Kg)", value: pilotPassengerWeight, setter: setPilotPassengerWeight },
               { label: "Bagages (Kg)", value: baggageWeight, setter: setBaggageWeight },
               { label: "Carburant (L)", value: fuelWeightL, setter: setFuelWeightL },
