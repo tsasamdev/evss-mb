@@ -21,12 +21,19 @@ const MassBalanceChart: React.FC = () => {
   const totalFuelKilo = fuelWeightL * 0.72;
   const totalWeight = emptyWeight + pilotPassengerWeight + baggageWeight + totalFuelKilo;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number>>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setter: React.Dispatch<React.SetStateAction<number>>
+  ) => {
     const value = e.target.value;
-    setter(value === '' ? 0 : Math.max(0, parseFloat(value))); // If input is empty, set to 0, otherwise parse the number and ensure it's >= 0
+    // If the input is empty, set to 0, otherwise parse the number
+    setter(value === '' ? 0 : Math.max(0, parseFloat(value)));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number>>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>, 
+    setter: React.Dispatch<React.SetStateAction<number>>
+  ) => {
     // If backspace is pressed and the input is "0", clear the input
     if (e.key === 'Backspace' && e.currentTarget.value === '0') {
       setter(0); // Set the state to 0 if it's a backspace on "0"
@@ -108,7 +115,7 @@ const MassBalanceChart: React.FC = () => {
                 <label className="font-semibold text-gray-700">{label} :</label>
                 <input
                   type="number"
-                  value={value}
+                  value={value === 0 ? '' : value}
                   onChange={(e) => handleInputChange(e, setter)}
             onKeyDown={(e) => handleKeyDown(e, setter)}
             className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
