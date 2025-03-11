@@ -21,6 +21,19 @@ const MassBalanceChart: React.FC = () => {
   const totalFuelKilo = fuelWeightL * 0.72;
   const totalWeight = emptyWeight + pilotPassengerWeight + baggageWeight + totalFuelKilo;
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number>>) => {
+    const value = e.target.value;
+    setter(value === '' ? 0 : Math.max(0, parseFloat(value))); // If input is empty, set to 0, otherwise parse the number and ensure it's >= 0
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number>>) => {
+    // If backspace is pressed and the input is "0", clear the input
+    if (e.key === 'Backspace' && e.currentTarget.value === '0') {
+      setter(0); // Set the state to 0 if it's a backspace on "0"
+    }
+  };
+
+
   const cg =
     (emptyWeight * 0.26 +
       pilotPassengerWeight * 0.55 +
@@ -50,7 +63,7 @@ const MassBalanceChart: React.FC = () => {
         label: "Centre de Gravité",
         data: [{ x: cg, y: totalWeight }],
         backgroundColor: isOutOfLimits ? "red" : "green",
-        pointRadius: 6,
+        pointRadius: 4,
       },
       {
         label: "Enveloppe de vol",
@@ -96,9 +109,10 @@ const MassBalanceChart: React.FC = () => {
                 <input
                   type="number"
                   value={value}
-                  onChange={(e) => setter(Math.max(0, Number(e.target.value)))}
-                  className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  min="0"
+                  onChange={(e) => handleInputChange(e, setter)}
+            onKeyDown={(e) => handleKeyDown(e, setter)}
+            className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            min="0"
                 />
               </div>
             ))}
