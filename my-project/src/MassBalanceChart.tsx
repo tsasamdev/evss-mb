@@ -40,6 +40,7 @@ const MassBalanceChart: React.FC = () => {
     }
   };
 
+  const pdfUrl = "/docs/rtc.pdf";
 
   const cg =
     (emptyWeight * 0.26 +
@@ -84,12 +85,27 @@ const MassBalanceChart: React.FC = () => {
     ],
   };
 
+ 
+
   return (
     <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-fit">
       {/* Responsive Title */}
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
         Masse et Centrage F-HDLV
       </h2>
+
+      {/* Ajout du bouton de téléchargement */}
+      <div className="text-center my-4">
+        <a
+          href={pdfUrl}
+          download
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+        >
+          📄 Manuel de vol
+        </a>
+      </div>
 
       {/* Layout Grid for Two Blocks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
