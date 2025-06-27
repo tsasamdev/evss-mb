@@ -60,12 +60,22 @@ const MassBalanceChart: React.FC<MassBalanceChartProps> = ({
   const moment = cg * totalWeight;
   const xValue = useMomentAxis ? moment : cg;
 
-  const isOutOfLimits =
-    xValue < Math.min(...envelope.map(p => p.x)) ||
-    xValue > Math.max(...envelope.map(p => p.x)) ||
-    totalWeight < Math.min(...envelope.map(p => p.y)) ||
-    totalWeight > Math.max(...envelope.map(p => p.y));
+ const isInsideEnvelope = (point: { x: number; y: number }, polygon: { x: number; y: number }[]) => {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y;
+    const xj = polygon[j].x, yj = polygon[j].y;
 
+    const intersect =
+      yi > point.y !== yj > point.y &&
+      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi + 0.00001) + xi;
+
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
+const isOutOfLimits = !isInsideEnvelope({ x: xValue, y: totalWeight }, envelope);
   const data = {
     datasets: [
       {

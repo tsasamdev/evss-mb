@@ -22,7 +22,7 @@ const App = () => {
       <MassBalanceChart
         title="Masse et Centrage F-HDLT"
         emptyWeight={365}
-        cgArms={{ empty: 0.27, pilotPassenger: 0.54, baggage: 1.05, fuel: 0.67 }}
+        cgArms={{ empty: 0.266, pilotPassenger: 0.545, baggage: 1.83, fuel: 0.680 }}
         envelope={[
           { x: 92, y: 374 },
           { x: 106, y: 374 },
