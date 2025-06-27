@@ -8,68 +8,69 @@ import {
   Chart as ChartJS,
   ScatterController,
 } from "chart.js";
-import "../src/styles/global.css";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ScatterController);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ScatterController
+);
 
-const MassBalanceChart: React.FC = () => {
-  const [emptyWeight] = useState<number>(345.9);
-  const [pilotPassengerWeight, setPilotPassengerWeight] = useState<number>(0);
-  const [baggageWeight, setBaggageWeight] = useState<number>(0);
-  const [fuelWeightL, setFuelWeightL] = useState<number>(0);
+interface MassBalanceChartProps {
+  title: string;
+  emptyWeight: number;
+  cgArms: {
+    empty: number;
+    pilotPassenger: number;
+    baggage: number;
+    fuel: number;
+  };
+  envelope: { x: number; y: number }[];
+  pdfUrl: string;
+  useMomentAxis?: boolean;
+  customXScale?: {
+    min: number;
+    max: number;
+  };
+}
+
+const MassBalanceChart: React.FC<MassBalanceChartProps> = ({
+  title,
+  emptyWeight,
+  cgArms,
+  envelope,
+  pdfUrl,
+  useMomentAxis = false,
+  customXScale,
+}) => {
+  const [pilotPassengerWeight, setPilotPassengerWeight] = useState(0);
+  const [baggageWeight, setBaggageWeight] = useState(0);
+  const [fuelWeightL, setFuelWeightL] = useState(0);
 
   const totalFuelKilo = fuelWeightL * 0.72;
   const totalWeight = emptyWeight + pilotPassengerWeight + baggageWeight + totalFuelKilo;
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    setter: React.Dispatch<React.SetStateAction<number>>
-  ) => {
-    const value = e.target.value;
-    // If the input is empty, set to 0, otherwise parse the number
-    setter(value === '' ? 0 : Math.max(0, parseFloat(value)));
-  };
-
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>, 
-    setter: React.Dispatch<React.SetStateAction<number>>
-  ) => {
-    // If backspace is pressed and the input is "0", clear the input
-    if (e.key === 'Backspace' && e.currentTarget.value === '0') {
-      setter(0); // Set the state to 0 if it's a backspace on "0"
-    }
-  };
-
-  const pdfUrl = "/docs/rtc.pdf";
-
   const cg =
-    (emptyWeight * 0.26 +
-      pilotPassengerWeight * 0.55 +
-      baggageWeight * 1.08 +
-      totalFuelKilo * 0.68) /
-    totalWeight;
+    (emptyWeight * cgArms.empty +
+      pilotPassengerWeight * cgArms.pilotPassenger +
+      baggageWeight * cgArms.baggage +
+      totalFuelKilo * cgArms.fuel) / totalWeight;
 
-  const envelope = [
-    { x: 0.25, y: 373 },
-    { x: 0.31, y: 373 },
-    { x: 0.37, y: 398 },
-    { x: 0.40, y: 456 },
-    { x: 0.40, y: 600 },
-    { x: 0.35, y: 600 },
-    { x: 0.25, y: 373 },
-  ];
+  const moment = cg * totalWeight;
+  const xValue = useMomentAxis ? moment : cg;
 
   const isOutOfLimits =
-    cg < Math.min(...envelope.map((p) => p.x)) ||
-    cg > Math.max(...envelope.map((p) => p.x)) ||
-    totalWeight < Math.min(...envelope.map((p) => p.y)) ||
-    totalWeight > Math.max(...envelope.map((p) => p.y));
+    xValue < Math.min(...envelope.map(p => p.x)) ||
+    xValue > Math.max(...envelope.map(p => p.x)) ||
+    totalWeight < Math.min(...envelope.map(p => p.y)) ||
+    totalWeight > Math.max(...envelope.map(p => p.y));
 
   const data = {
     datasets: [
       {
         label: "Centre de Gravité",
-        data: [{ x: cg, y: totalWeight }],
+        data: [{ x: xValue, y: totalWeight }],
         backgroundColor: isOutOfLimits ? "red" : "green",
         pointRadius: 4,
       },
@@ -77,119 +78,114 @@ const MassBalanceChart: React.FC = () => {
         label: "Enveloppe de vol",
         data: envelope,
         borderColor: "black",
-        borderWidth: 3,
+        borderWidth: 2,
         fill: true,
-        pointRadius: 4,
+        pointRadius: 3,
         showLine: true,
       },
     ],
   };
 
- 
+  const xScale = useMomentAxis
+    ? {
+        title: {
+          display: true,
+          text: "Moment d'avion (kg·m)",
+        },
+        min: customXScale?.min ?? 70,
+        max: customXScale?.max ?? 130,
+      }
+    : {
+        title: {
+          display: true,
+          text: "Distance du C.G. au pt de référence (m)",
+        },
+        min: 0.24,
+        max: 0.44,
+      };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-gray-100 shadow-lg rounded-xl min-h-fit">
-      {/* Responsive Title */}
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
-        Masse et Centrage F-HDLV
-      </h2>
+    <div className="p-6 bg-white shadow-xl rounded-xl">
+      <h2 className="text-2xl font-bold mb-4 text-center">{title}</h2>
 
-      {/* Ajout du bouton de téléchargement */}
-      <div className="text-center my-4">
+      <div className="mb-4 text-center">
         <a
           href={pdfUrl}
-          download
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           📄 Manuel de vol
         </a>
       </div>
 
-      {/* Layout Grid for Two Blocks */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Form Block */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold mb-4 text-gray-800">Données d'entrée</h3>
-          <div className="flex flex-col">
-              <label className="font-semibold text-gray-700">Poids à Vide (Kg) :</label>
-              <input
-                type="text"
-                value={emptyWeight}
-                className="border p-2 rounded w-full bg-gray-200 text-gray-600"
-                disabled
-              />
-            </div>
-          <div className="flex flex-col space-y-4">
-            {[
-              { label: "Pilote & Passagers (Kg)", value: pilotPassengerWeight, setter: setPilotPassengerWeight },
-              { label: "Bagages (Kg)", value: baggageWeight, setter: setBaggageWeight },
-              { label: "Carburant (L)", value: fuelWeightL, setter: setFuelWeightL },
-            ].map(({ label, value, setter }, idx) => (
-              <div key={idx} className="flex flex-col">
-                <label className="font-semibold text-gray-700">{label} :</label>
-                <input
-                  type="number"
-                  value={value === 0 ? '' : value}
-                  onChange={(e) => handleInputChange(e, setter)}
-            onKeyDown={(e) => handleKeyDown(e, setter)}
-            className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            min="0"
-                />
-              </div>
-            ))}
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <label>Poids à Vide (Kg):</label>
+          <input disabled value={emptyWeight} className="w-full bg-gray-200 p-2 rounded" />
 
-            {/* Fuel Weight (Kg) Display */}
-            <div className="flex flex-col">
-              <label className="font-semibold text-gray-700">Carburant (Kg) :</label>
-              <input
-                type="text"
-                value={totalFuelKilo.toFixed(1)}
-                className="border p-2 rounded w-full bg-gray-200 text-gray-600"
-                disabled
-              />
-            </div>
-          </div>
+          <label>Pilote & Passagers (Kg):</label>
+          <input
+            type="number"
+            value={pilotPassengerWeight}
+            onChange={e => setPilotPassengerWeight(Number(e.target.value))}
+            className="w-full p-2 border rounded"
+          />
+
+          <label>Bagages (Kg):</label>
+          <input
+            type="number"
+            value={baggageWeight}
+            onChange={e => setBaggageWeight(Number(e.target.value))}
+            className="w-full p-2 border rounded"
+          />
+
+          <label>Carburant (L):</label>
+          <input
+            type="number"
+            value={fuelWeightL}
+            onChange={e => setFuelWeightL(Number(e.target.value))}
+            className="w-full p-2 border rounded"
+          />
+
+          <label>Carburant (Kg):</label>
+          <input
+            disabled
+            value={totalFuelKilo.toFixed(1)}
+            className="w-full bg-gray-200 p-2 rounded"
+          />
         </div>
 
-        {/* Graph Block */}
-        <div className="bg-white p-6 rounded-lg shadow-lg flex items-center justify-center">
-          <div className="w-full h-[400px]">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Graphique</h3>
-            <Chart
-              type="scatter"
-              data={data}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  x: {
-                    title: { display: true, text: "Distance du C.G. au pt de référence (m)" },
-                    min: 0.24,
-                    max: 0.44,
+        <div className="h-[400px]">
+          <Chart
+            type="scatter"
+            data={data}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: xScale,
+                y: {
+                  title: {
+                    display: true,
+                    text: "Poids Total (Kg)",
                   },
-                  y: {
-                    title: { display: true, text: "Poids Total (Kg)" },
-                    min: 340,
-                    max: 620,
-                  },
+                  min: 340,
+                  max: 620,
                 },
-              }}
-            />
-          </div>
+              },
+            }}
+          />
         </div>
       </div>
 
-      {/* CG and Weight Info */}
-      <div className="text-center mt-6">
-        <p className="text-lg font-semibold text-gray-800">
-          CG: {cg.toFixed(3)} m | Poids Total: {totalWeight.toFixed(2)} Kg
-        </p>
+      <div className="mt-4 text-center font-semibold text-gray-800">
+        {useMomentAxis
+          ? `Moment: ${moment.toFixed(1)} kg·m`
+          : `CG: ${cg.toFixed(3)} m`}{" "}
+        | Poids Total: {totalWeight.toFixed(1)} Kg
         {isOutOfLimits && (
-          <p className="mt-4 text-red-600 font-bold">
-            ⚠️ Attention : Hors des limites de vol sécurisées !
-          </p>
+          <p className="text-red-600 mt-2">⚠️ Hors des limites de vol sécurisées !</p>
         )}
       </div>
     </div>
