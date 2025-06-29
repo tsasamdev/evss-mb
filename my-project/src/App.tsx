@@ -2,7 +2,8 @@ import MassBalanceChart from "./MassBalanceChart";
 
 const App = () => {
   return (
-    <div className="flex flex-col gap-12 p-8 max-w-7xl mx-auto">
+   <div className="flex flex-col items-center gap-12 px-4 py-8 max-w-7xl mx-auto w-full">
+
       <MassBalanceChart
         title="Masse et Centrage F-HDLV"
         emptyWeight={345.9}
